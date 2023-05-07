@@ -1,104 +1,108 @@
+import { getLaunchData, printCommonInfo } from "./helpers";
 import {
-  GraphTask1,
-  GraphTask10,
-  GraphTask11,
-  GraphTask2,
-  GraphTask3,
-  GraphTask4,
-  GraphTask5,
-  GraphTask6,
-  GraphTask7,
-  GraphTask9,
+    GraphTask1,
+    GraphTask10,
+    GraphTask11,
+    GraphTask2,
+    GraphTask3,
+    GraphTask4,
+    GraphTask5,
+    GraphTask6,
+    GraphTask7,
+    GraphTask9,
 } from "./tasks";
-
-const inputFlags = ["m", "l", "e"];
-
-function getLaunchData() {
-  let inputFlag, outputFlag, infoFlag;
-
-  let i = 2;
-  while (process.argv[i]) {
-    const arg = process.argv[i];
-    if (inputFlags.includes(arg)) {
-      if (inputFlag) {
-        throw new Error();
-      }
-    }
-  }
-}
+import { Task4Flag } from "./types";
 
 export function main() {
-  const filePath = process.argv[2];
+    const data = getLaunchData();
+    const { task, test, infoFlag } = data;
 
-  if (!filePath) {
-    throw new Error("Не указан путь до файла!");
-  }
-  const filePathParts = filePath.split("/");
+    if (!task && infoFlag) {
+        printCommonInfo();
+        return;
+    }
 
-  if (filePathParts.length === 1) {
-    throw new Error("Не указано название или директория файла!");
-  }
-  const dir = filePathParts[0];
+    if (test === "") {
+        throw new Error("Не указан номер теста!");
+    }
 
-  switch (dir) {
-    case "task1": {
-      const graph = new GraphTask1(filePath);
-      const result = graph.floydWarshall();
-      graph.printResult(result);
-      break;
+    switch (task) {
+        case "1": {
+            const graph = new GraphTask1(data);
+            graph.solve();
+            break;
+        }
+        case "2": {
+            const graph = new GraphTask2(data);
+            graph.solve();
+            break;
+        }
+        case "3": {
+            const graph = new GraphTask3(data);
+            graph.solve();
+            break;
+        }
+        case "4": {
+            const graph = new GraphTask4(data);
+            const flags = ["-s", "-b", "-p", "-k"];
+            let flag: Task4Flag;
+            for (const arg of process.argv) {
+                if (flags.includes(arg)) {
+                    flag = arg as Task4Flag;
+                }
+            }
+            graph.solve(flag);
+            break;
+        }
+        case "5": {
+            const graph = new GraphTask5(data);
+            let start: number | undefined = undefined,
+                end: number | undefined = undefined;
+            for (const arg of process.argv) {
+                if (arg.startsWith("n=")) {
+                    start = parseInt(arg.slice(2));
+                }
+                if (arg.startsWith("d=")) {
+                    end = parseInt(arg.slice(2));
+                }
+            }
+
+            if (start !== undefined && end !== undefined) {
+                graph.solve(start - 1, end - 1);
+            } else if (infoFlag) {
+                graph.printInfo();
+            }
+            break;
+        }
+        case "6": {
+            const graph = new GraphTask6(data);
+            const result = graph.solveBylevit();
+            console.log(result);
+            break;
+        }
+        case "7": {
+            const graph = new GraphTask7(data);
+            graph.johnsonDistance();
+            break;
+        }
+        case "9": {
+            const graph = new GraphTask9(data);
+            graph.hamiltonianPath();
+            break;
+        }
+        case "10": {
+            const graph = new GraphTask10(data);
+            graph.fordFalkernson();
+            break;
+        }
+        case "11": {
+            const graph = new GraphTask11(data);
+            graph.all();
+            break;
+        }
+        default:
+            throw new Error(`Такого задания не существует!`);
     }
-    case "task2": {
-      const graph = new GraphTask2(filePath);
-      const result = graph.solve();
-      graph.printResult(result);
-      break;
-    }
-    case "task3": {
-      const graph = new GraphTask3(filePath);
-      const result = graph.findBridgesAndArticulationPoints();
-      graph.printResult(result);
-      break;
-    }
-    case "task4": {
-      const graph = new GraphTask4(filePath);
-      const result = graph.solveByKruscal();
-      graph.printResult(result);
-      break;
-    }
-    case "task5": {
-      const graph = new GraphTask5(filePath);
-      const result = graph.solve(4, 3);
-      break;
-    }
-    case "task6": {
-      const graph = new GraphTask6(filePath);
-      const result = graph.solveBylevit();
-      console.log(result);
-      break;
-    }
-    case "task7": {
-      const graph = new GraphTask7(filePath);
-      graph.johnsonDistance();
-      break;
-    }
-    case "task9": {
-      const graph = new GraphTask9(filePath);
-      graph.hamiltonianPath();
-      break;
-    }
-    case "task10": {
-      const graph = new GraphTask10(filePath);
-      graph.fordFalkernson();
-      break;
-    }
-    case "task11": {
-      const graph = new GraphTask11(filePath);
-      graph.all();
-      break;
-    }
-    default:
-      throw new Error(`Директории ${dir} не существует!`);
-  }
 }
 
 main();

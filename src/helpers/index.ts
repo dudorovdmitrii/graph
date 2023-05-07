@@ -1,93 +1,224 @@
+import path from "path";
+import fs from "fs";
+import {
+    InputFlag,
+    NullableWriteStream,
+    PrintArray,
+    PrintMatrix,
+    PrintValue,
+    WriteArray,
+    WriteBefore,
+    WriteMatrix,
+    WriteOrPrintArray,
+    WriteOrPrintMatrix,
+    WriteOrPrintValue,
+    WriteValue,
+} from "../types";
+
+export const resultDir = "results";
+
 const startVertex = 1;
 export function shiftVertex(index: number) {
-  return index + startVertex;
+    return index + startVertex;
 }
 
-// getNumbers(): number[] {
-//     let current = 1;
-//     this.length = this.matrix[0].length;
-//     const nums: number[] = new Array(this.length).fill(0);
-//     const marked = new Set();
+export function getStreamOrNull(
+    outputFlag: boolean,
+    filePath: string
+): NullableWriteStream {
+    return outputFlag
+        ? fs.createWriteStream(path.resolve(resultDir, filePath))
+        : null;
+}
 
-//     const dfs = (num: number) => {
-//       if (marked.has(num)) {
-//         return;
-//       }
-//       marked.add(num);
-//       for (let i = 0; i < this.length; i++) {
-//         if (this.matrix[num][i] === 0) {
-//           continue;
-//         }
-//         if (!marked.has(i)) {
-//           nums[num] = current++;
-//           dfs(i);
-//         }
-//       }
-//       nums[num] = current++;
-//     };
+export function printCommonInfo() {
+    console.log("Автор работы: Дудоров Дмитрий");
+    console.log("Группа: М30-210Б-21");
+    console.log("Список ключей:");
+    console.log("-e: Ввод графа через список ребер");
+    console.log("-m: Ввод графа через матрицу смежности");
+    console.log("-l: Ввод графа через список смежности");
+    console.log("-o: Вывод результата в файл");
+}
 
-//     for (let i = 0; i < this.length; i++) {
-//       dfs(i);
-//     }
+export function getLaunchData() {
+    const inputFlags = ["-m", "-l", "-e"];
 
-//     return nums;
-//   }
+    let inputFlag: InputFlag = null;
+    let outputFlag = false,
+        infoFlag = false;
+    let task = "",
+        test = "";
 
-//   invertGraph(): number[][] {
-//     const invertedMatrix: number[][] = Array.from({ length: this.length }, () =>
-//       new Array(this.length).fill(0)
-//     );
+    let i = 2;
+    while (process.argv[i]) {
+        const arg = process.argv[i];
+        if (inputFlags.includes(arg)) {
+            if (inputFlag) {
+                throw new Error("Указано больше одного способа ввода данных!");
+            }
+            inputFlag = arg as InputFlag;
+        }
+        if (arg === "-o") {
+            outputFlag = true;
+        }
+        if (arg === "-h") {
+            infoFlag = true;
+            break;
+        }
+        if (arg.startsWith("task")) {
+            const [_, taskNumber] = arg.split("=");
+            task = taskNumber;
+        }
+        if (arg.startsWith("test")) {
+            const [_, testNumber] = arg.split("=");
+            test = testNumber;
+        }
 
-//     for (let row = 0; row < this.length; row++) {
-//       for (let col = 0; col < this.length; col++) {
-//         if (this.matrix[row][col] === 1) {
-//           invertedMatrix[col][row] = 1;
-//         }
-//       }
-//     }
+        i++;
+    }
 
-//     return invertedMatrix;
-//   }
+    return {
+        inputFlag,
+        outputFlag,
+        infoFlag,
+        task,
+        test,
+    };
+}
 
-//   getComponents(invertedMatrix: number[][], nums: number[]): number[][] {
-//     const components: number[][] = [];
-//     const marked = new Set();
+export function getFilePath(task: string, test: string, inputFlag: InputFlag) {
+    const testWithZeros = parseInt(test) > 9 ? "0" + test : "00" + test;
 
-//     const dfs = (num: number, component: number[]) => {
-//       if (marked.has(num)) return;
+    switch (inputFlag) {
+        case "-m": {
+            return `task${task}/matrix_t${task}_${testWithZeros}.txt`;
+        }
+        case "-e": {
+            return `task${task}/list_of_edges_t${task}_${testWithZeros}.txt`;
+        }
+        case "-l": {
+            return `task${task}/list_of_adjacency_t${task}_${testWithZeros}.txt`;
+        }
+        default: {
+            return `task${task}/matrix_t${task}_${testWithZeros}.txt`;
+        }
+    }
+}
 
-//       component.push(num);
-//       marked.add(num);
+function writeBefore(props: WriteBefore) {
+    const { stream, before, contentNextLine } = props;
+    if (before) {
+        stream.write(before + ": ");
 
-//       for (let i = 0; i < this.length; i++) {
-//         if (invertedMatrix[num][i] === 0) continue;
-//         if (!marked.has(i)) {
-//           dfs(i, component);
-//         }
-//       }
-//     };
+        if (contentNextLine) {
+            stream.write("\n");
+        }
+    }
+}
 
-//     const arr = new Array(this.length).fill(null).map((_, ind) => ind);
-//     const hash: Record<string, number> = {};
-//     for (let i = 0; i < this.length; i++) {
-//       hash[i] = nums[i];
-//     }
-//     arr.sort((a, b) => hash[b] - hash[a]);
+function normalizeArray(array: number[], shift: boolean | undefined) {
+    return shift ? array.map((vertex) => shiftVertex(vertex)) : array;
+}
 
-//     for (let i = 0; i < this.length; i++) {
-//       const component: number[] = [];
-//       dfs(arr[i], component);
-//       if (component.length > 0) components.push(component);
-//     }
+export function writeMatrix(props: WriteMatrix) {
+    const { stream, matrix, before, shift } = props;
 
-//     return components;
-//   }
-// solveDirected() {
-//   const invertedGraph = this.invertGraph();
-//   const nums = this.getNumbers();
-//   const components = this.getComponents(invertedGraph, nums);
+    writeBefore({ stream, before, contentNextLine: true });
+    stream.write("[");
+    stream.write("\n");
+    for (const row of matrix) {
+        const normalizedRow = normalizeArray(row, shift);
+        stream.write(" [");
+        stream.write(normalizedRow.toString());
+        stream.write("]");
+        stream.write("\n");
+    }
+    stream.write("]");
+    stream.write("\n");
+}
 
-//   return {
-//     components,
-//   };
-// }
+export function writeArray(props: WriteArray) {
+    const { before, stream, array, shift } = props;
+
+    const normalizedArray = normalizeArray(array, shift);
+
+    writeBefore({ stream, before });
+    stream.write("[");
+    stream.write(normalizedArray.toString());
+    stream.write("]");
+    stream.write("\n");
+}
+
+export function writeValue(props: WriteValue) {
+    const { stream, value, before } = props;
+
+    writeBefore({ stream, before });
+    stream.write(value.toString());
+    stream.write("\n");
+}
+
+export function printMatrix(props: PrintMatrix) {
+    const { matrix, before, shift } = props;
+
+    if (before) {
+        console.log(before + ": ");
+    }
+
+    for (const row of matrix) {
+        const normalizedRow = normalizeArray(row, shift);
+        console.log(normalizedRow);
+    }
+}
+
+export function printValue(props: PrintValue) {
+    const { before, value } = props;
+
+    if (before) {
+        console.log(before + ": ", value);
+    } else {
+        console.log(value);
+    }
+}
+
+export function printArray(props: PrintArray) {
+    const { before, array, shift } = props;
+
+    const normalizedArray = normalizeArray(array, shift);
+
+    if (before) {
+        console.log(before + ": ", normalizedArray);
+    } else {
+        console.log(normalizedArray);
+    }
+}
+
+export function writeOrPrintMatrix(props: WriteOrPrintMatrix) {
+    const { matrix, before, stream, shift } = props;
+
+    if (!stream) {
+        printMatrix({ matrix, before, shift });
+    } else {
+        writeMatrix({ stream, matrix, before, shift });
+    }
+}
+
+export function writeOrPrintArray(props: WriteOrPrintArray) {
+    const { array, before, stream, shift } = props;
+
+    if (!stream) {
+        printArray({ array, before, shift });
+    } else {
+        writeArray({ stream, array, before, shift });
+    }
+}
+
+export function writeOrPrintValue(props: WriteOrPrintValue) {
+    const { value, before, stream } = props;
+
+    if (!stream) {
+        printValue({ value, before });
+    } else {
+        writeValue({ stream, value, before });
+    }
+}

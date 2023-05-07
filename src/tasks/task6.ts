@@ -2,7 +2,6 @@ import { Graph } from "../graph";
 
 export class GraphTask6 extends Graph {
   solveByDijkstra() {
-    type Graph = number[][]; // матрица смежности с весами
     const start = 9;
 
     const distances = new Array(this.length).fill(Number.MAX_SAFE_INTEGER); // массив расстояний до каждой вершины
