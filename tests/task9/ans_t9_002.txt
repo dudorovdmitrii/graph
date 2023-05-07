@@ -1,0 +1,2 @@
+Hamiltonian path:
+1_5_7_3_4_2_8
