@@ -29,6 +29,10 @@ export class GraphTask4 extends Graph {
         let results: PrintResult[] = [];
         const time: number[] = [];
 
+        if (this.isDirected()) {
+            this.matrix = this.getСorrelatedGraph();
+        }
+
         switch (flag) {
             case "-k": {
                 results.push({ ...this.solveByKruscal(), algorithm: "k" });
@@ -75,12 +79,12 @@ export class GraphTask4 extends Graph {
         const minKey = (
             key: Array<number>,
             mstSet: Array<boolean>,
-            V: number
+            length: number
         ): number => {
             let min: number = Infinity;
             let minIndex: number = -1;
 
-            for (let i = 0; i < V; i++) {
+            for (let i = 0; i < length; i++) {
                 if (mstSet[i] == false && key[i] < min) {
                     min = key[i];
                     minIndex = i;
@@ -90,45 +94,43 @@ export class GraphTask4 extends Graph {
             return minIndex;
         };
 
-        const primMST = (graph: Array<Array<number>>, V: number) => {
-            const parent: Array<number> = new Array<number>(V);
-            const key: Array<number> = new Array<number>(V);
-            const mstSet: Array<boolean> = new Array<boolean>(V);
-
-            // инициализация массивов
-            for (let i = 0; i < V; i++) {
-                key[i] = Infinity;
-                mstSet[i] = false;
-            }
+        const primMST = () => {
+            const parent: Array<number> = new Array<number>(this.length);
+            const key: Array<number> = new Array<number>(this.length).fill(Infinity);
+            const mstSet: Array<boolean> = new Array<boolean>(this.length).fill(false);
 
             key[0] = 0;
             parent[0] = -1;
 
-            for (let i = 0; i < V - 1; i++) {
-                const u = minKey(key, mstSet, V);
+            for (let i = 0; i < this.length - 1; i++) {
+                // Находится не посещенная вершина с ребром минимального веса
+                const u = minKey(key, mstSet, this.length);
                 mstSet[u] = true;
 
-                for (let v = 0; v < V; v++) {
+                // Всем смежным непосещенным вершинам обновляется ребро минимального веса
+                for (let v = 0; v < this.length; v++) {
                     if (
-                        graph[u][v] != 0 &&
+                        this.matrix[u][v] != 0 &&
                         mstSet[v] == false &&
-                        graph[u][v] < key[v]
+                        this.matrix[u][v] < key[v]
                     ) {
                         parent[v] = u;
-                        key[v] = graph[u][v];
+                        key[v] = this.matrix[u][v];
                     }
                 }
             }
+            // После этого цикла найден массив key - минимальный вес ребра,
+            // по которому можно прийти в вершину
 
             let minimumCost = 0;
-            for (let i = 1; i < V; i++) {
-                tree.push([parent[i], i, graph[i][parent[i]]]);
-                minimumCost += graph[i][parent[i]];
+            for (let i = 1; i < this.length; i++) {
+                tree.push([parent[i], i, key[i]]);
+                minimumCost += key[i];
             }
             return minimumCost;
         };
 
-        const cost = primMST(this.matrix, this.length);
+        const cost = primMST();
 
         return { cost, tree };
     }
@@ -136,23 +138,22 @@ export class GraphTask4 extends Graph {
     solveByBuravka() {
         const tree: Array<Edge> = [];
         let cost = 0;
-        const numVertices = this.length;
-        const components = new Array(numVertices).fill(0);
+        const components = new Array(this.length).fill(0);
 
-        // Инициализация массива компонент связности.
-        for (let i = 0; i < numVertices; ++i) {
+        // Инициализация массива компонент связности, для каждой вершины уникальная компонента связности
+        for (let i = 0; i < this.length; ++i) {
             components[i] = i;
         }
 
         // Пока не останется только одна компонента связности.
         while (new Set(components).size !== 1) {
-            const cheapest: Cheapest[] | null = new Array(numVertices).fill(
+            const cheapest: Cheapest[] | null = new Array(this.length).fill(
                 null
             );
 
-            // Находим самое дешевое ребро, соединяющее каждую компоненту связности.
-            for (let i = 0; i < numVertices; ++i) {
-                for (let j = 0; j < numVertices; ++j) {
+            // Находим минимальное ребро, соединяющее каждую компоненту связности.
+            for (let i = 0; i < this.length; ++i) {
+                for (let j = 0; j < this.length; ++j) {
                     if (this.matrix[i][j] !== 0) {
                         const component1 = components[i];
                         const component2 = components[j];
@@ -183,20 +184,20 @@ export class GraphTask4 extends Graph {
             }
 
             // Добавляем найденные ребра в остовное дерево и объединяем компоненты связности.
-            for (let c = 0; c < numVertices; ++c) {
-                if (cheapest[c] !== null) {
-                    const { source, target, weight } = cheapest[c];
+            for (let i = 0; i < this.length; ++i) {
+                if (cheapest[i] !== null) {
+                    const { source, target, weight } = cheapest[i];
                     if (components[source] !== components[target]) {
                         tree.push([
-                            cheapest[c].source,
-                            cheapest[c].target,
-                            cheapest[c].weight,
+                            cheapest[i].source,
+                            cheapest[i].target,
+                            cheapest[i].weight,
                         ]);
                         cost += weight;
                         const prevComponent = components[target];
-                        for (let i = 0; i < numVertices; ++i) {
-                            if (components[i] === prevComponent) {
-                                components[i] = components[source];
+                        for (let j = 0; j < this.length; ++j) {
+                            if (components[j] === prevComponent) {
+                                components[j] = components[source];
                             }
                         }
                     }
@@ -208,7 +209,9 @@ export class GraphTask4 extends Graph {
     }
 
     solveByKruscal() {
-        const g: number[][] = []; // вес - вершина 1 - вершина 2
+        const edges: number[][] = []; // вес - вершина 1 - вершина 2
+
+        // Составляем массив ребер
         for (let i = 0; i < this.length; i++) {
             for (let j = 0; j < this.length; j++) {
                 if (this.matrix[i][j] != 0) {
@@ -216,7 +219,7 @@ export class GraphTask4 extends Graph {
                     cur[0] = this.matrix[i][j];
                     cur[1] = i;
                     cur[2] = j;
-                    g.push(cur);
+                    edges.push(cur);
                 }
             }
         }
@@ -224,20 +227,30 @@ export class GraphTask4 extends Graph {
         let cost = 0;
         const tree: Array<Edge> = [];
 
-        g.sort((a, b) => a[0] - b[0]);
+        // Сортируем ребра по неубывнию по их весам
+        edges.sort((a, b) => a[0] - b[0]);
+
+        // Массив для отслеживания пройденных вершин
         const tree_id: number[] = new Array(this.length)
             .fill(0)
             .map((_, ind) => ind);
 
-        for (let i = 0; i < g.length; i++) {
-            let a = g[i][1],
-                b = g[i][2],
-                l = g[i][0];
-            if (tree_id[a] != tree_id[b]) {
-                cost += l;
-                tree.push([a, b, l]);
-                let old_id = tree_id[b];
-                let new_id = tree_id[a];
+        for (let i = 0; i < edges.length; i++) {
+            let v1 = edges[i][1],
+                v2 = edges[i][2],
+                weight = edges[i][0];
+
+            // Добавляем i-ое ребро в наш подграф только в том случае, 
+            // если данное ребро соединяет две разные компоненты связности, 
+            // одним из которых является наш подграф. 
+            // То есть, на каждом шаге добавляется минимальное по весу ребро, 
+            // один конец которого содержится в нашем подграфе, а другой - еще нет.
+            if (tree_id[v1] != tree_id[v2]) {
+                cost += weight;
+                tree.push([v1, v2, weight]);
+
+                let old_id = tree_id[v2];
+                let new_id = tree_id[v1];
                 for (let j = 0; j < this.length; ++j) {
                     if (tree_id[j] == old_id) {
                         tree_id[j] = new_id;

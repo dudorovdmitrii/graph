@@ -134,6 +134,21 @@ export abstract class Graph {
         return false;
     }
 
+    getСorrelatedGraph() {
+        const result = Array.from({length: this.length}, () => new Array(this.length).fill(0));
+
+        for (let row = 0; row < this.length; row++) {
+            for (let col = 0; col < this.length; col++) {
+                if (this.matrix[row][col] !== 0) {
+                    result[row][col] = this.matrix[row][col];
+                    result[col][row] = this.matrix[row][col];
+                }
+            }
+        }
+
+        return result;
+    }
+
     adjacencyMatrix() {
         const result: number[][] = Array.from({ length: this.length }, () =>
             new Array(this.length).fill(0)
