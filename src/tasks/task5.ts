@@ -27,6 +27,11 @@ export class GraphTask5 extends Graph {
         const distances: number[] = new Array(this.length).fill(
             Number.MAX_SAFE_INTEGER
         ); // массив расстояний до каждой вершины
+
+        // Изначально помечаем стартовую вершину
+        // Потом обновляем расстояния до вершин смежных ей
+        // Далее выбираем вершину с минимальным расстоянием к предыдущей
+        // Потом обновляем расстояния до вершин смежных ей
         distances[start] = 0; // расстояние до начальной вершины равно 0
 
         const visited = new Array(this.length).fill(false); // массив для отслеживания посещенных вершин
@@ -44,6 +49,10 @@ export class GraphTask5 extends Graph {
                     minDistance = distances[j];
                     currentVertex = j;
                 }
+            }
+
+            if (currentVertex === -1) {
+                break;
             }
 
             // помечаем выбранную вершину как посещенную
@@ -70,9 +79,14 @@ export class GraphTask5 extends Graph {
         // формируем маршрут
         const finalPath: number[][] = [];
         let current = end;
-        while (current !== start) {
-            finalPath.unshift(path[current]);
-            current = path[current][0];
+        try {
+            while (current !== start) {
+                finalPath.unshift(path[current]);
+                current = path[current][0];
+            }
+        }
+        catch {
+            return { path: [], distance: -1 };
         }
 
         return { path: finalPath, distance: distances[end] };
@@ -92,9 +106,17 @@ export class GraphTask5 extends Graph {
     ) {
         const stream = getStreamOrNull(this.outputFlag, this.filePath);
 
+        if (path.length === 0) {
+            writeOrPrintValue({
+                value: `There is no path between ${start + 1} and ${end + 1} vertexes`,
+                stream,
+            });
+            return;
+        }
+
         writeOrPrintValue({
             value: distance,
-            before: `Shortest path between ${start} and ${end} vertexes`,
+            before: `Shortest path between ${start + 1} and ${end + 1} vertexes`,
             stream,
         });
         writeOrPrintMatrix({
