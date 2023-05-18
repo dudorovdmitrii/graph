@@ -1,4 +1,4 @@
-import { Graph } from "../graph";
+import { Graph } from '../graph';
 
 export class GraphTask6 extends Graph {
   solveByDijkstra() {
@@ -75,7 +75,7 @@ export class GraphTask6 extends Graph {
         if (this.matrix[j][k] !== 0) {
           const distanceToNeighbor = distances[j] + this.matrix[j][k];
           if (distanceToNeighbor < distances[k]) {
-            throw new Error("Граф содержит отрицательный цикл");
+            throw new Error('Граф содержит отрицательный цикл');
           }
         }
       }

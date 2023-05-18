@@ -1,4 +1,4 @@
-import { Graph } from "../graph";
+import { Graph } from '../graph';
 
 export class GraphTask10 extends Graph {
   fordFalkernson(): void {
@@ -19,14 +19,14 @@ export class GraphTask10 extends Graph {
         s = i;
       }
     }
-    console.log("0");
+    console.log('0');
     if (stop != 2) {
       return;
     }
     let flag = true;
 
     /////
-    console.log("1");
+    console.log('1');
     while (flag) {
       for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
@@ -39,7 +39,7 @@ export class GraphTask10 extends Graph {
       q.push(s);
       const used: boolean[] = new Array(n).fill(false);
       used[s] = true;
-      console.log("adsdfd");
+      console.log('adsdfd');
       while (q.length !== 0) {
         const v = q.shift();
         for (let i = 0; i < n; i++) {
@@ -75,7 +75,7 @@ export class GraphTask10 extends Graph {
     }
     ////
 
-    console.log("Поток");
+    console.log('Поток');
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         if (stream[i][j] > 0) {

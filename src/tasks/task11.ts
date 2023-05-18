@@ -1,9 +1,9 @@
-import { GraphTask10 } from ".";
+import { GraphTask10 } from '.';
 
 enum ColorType {
-  red = "RED",
-  blue = "BLUE",
-  any = "ANY",
+  red = 'RED',
+  blue = 'BLUE',
+  any = 'ANY',
 }
 
 export class GraphTask11 extends GraphTask10 {
@@ -21,19 +21,18 @@ export class GraphTask11 extends GraphTask10 {
         if (v !== undefined && this.matrix[v][i] != 0) {
           if (color[i] == ColorType.any) {
             q.push(i);
-            color[i] =
-              color[v] == ColorType.red ? ColorType.blue : ColorType.red;
+            color[i] = color[v] == ColorType.red ? ColorType.blue : ColorType.red;
           }
           if (color[i] == color[v]) {
-            console.log("Граф не двудольный");
+            console.log('Граф не двудольный');
             return;
           }
         }
       }
     }
-    console.log("OK");
+    console.log('OK');
     const matrix: number[][] = Array.from({ length: this.length + 2 }, () =>
-      new Array(this.length + 2).fill(0)
+      new Array(this.length + 2).fill(0),
     );
 
     for (let i = 0; i < this.length; i++) {

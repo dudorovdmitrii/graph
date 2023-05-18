@@ -1,4 +1,4 @@
-import { Graph } from "../graph";
+import { Graph } from '../graph';
 
 export class GraphTask9 extends Graph {
   hamiltonianPath() {
@@ -15,7 +15,7 @@ export class GraphTask9 extends Graph {
     if (found) {
       console.log(path);
     } else {
-      console.log("Путь не найден");
+      console.log('Путь не найден');
     }
   }
 

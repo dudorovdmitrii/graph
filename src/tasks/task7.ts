@@ -1,13 +1,11 @@
-import { Graph } from "../graph";
+import { Graph } from '../graph';
 
 export class GraphTask7 extends Graph {
   johnsonDistance() {
     const n = this.length;
     const h = Array(n).fill(0);
 
-    const infinityMatrix: number[][] = Array.from({ length: n }, () =>
-      new Array(n).fill(Infinity)
-    );
+    const infinityMatrix: number[][] = Array.from({ length: n }, () => new Array(n).fill(Infinity));
 
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
@@ -22,10 +20,7 @@ export class GraphTask7 extends Graph {
       let changed = false;
       for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
-          if (
-            infinityMatrix[i][j] !== Infinity &&
-            h[i] + infinityMatrix[i][j] < h[j]
-          ) {
+          if (infinityMatrix[i][j] !== Infinity && h[i] + infinityMatrix[i][j] < h[j]) {
             h[j] = h[i] + infinityMatrix[i][j];
             changed = true;
           }
@@ -40,7 +35,7 @@ export class GraphTask7 extends Graph {
         if (this.matrix[j][k] !== 0) {
           const distanceToNeighbor = h[j] + this.matrix[j][k];
           if (distanceToNeighbor < h[k]) {
-            throw new Error("Граф содержит отрицательный цикл");
+            throw new Error('Граф содержит отрицательный цикл');
           }
         }
       }
