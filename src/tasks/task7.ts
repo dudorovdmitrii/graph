@@ -1,25 +1,40 @@
 import { Graph } from '../graph';
+import { getStreamOrNull, printCommonInfo, shiftVertex, writeOrPrintMatrix } from '../helpers';
+
+interface PrintResult {
+  result: number[][];
+}
 
 export class GraphTask7 extends Graph {
+  solve() {
+    if (this.infoFlag) {
+      this.printInfo();
+      return;
+    }
+    const result = this.johnsonDistance();
+    this.printOrWriteResult({ result });
+  }
+
   johnsonDistance() {
-    const n = this.length;
-    const h = Array(n).fill(0);
+    const h = Array(this.length).fill(0);
 
-    const infinityMatrix: number[][] = Array.from({ length: n }, () => new Array(n).fill(Infinity));
+    const infinityMatrix: number[][] = Array.from({ length: this.length }, () =>
+      new Array(this.length).fill(Infinity),
+    );
 
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this.length; j++) {
         if (this.matrix[i][j] !== 0) {
           infinityMatrix[i][j] = this.matrix[i][j];
         }
       }
     }
 
-    // Step 1: Run Bellman-Ford algorithm
-    for (let k = 0; k < n; k++) {
+    // Алгоритм Беллмана-Форда-Мура
+    for (let k = 0; k < this.length; k++) {
       let changed = false;
-      for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
+      for (let i = 0; i < this.length; i++) {
+        for (let j = 0; j < this.length; j++) {
           if (infinityMatrix[i][j] !== Infinity && h[i] + infinityMatrix[i][j] < h[j]) {
             h[j] = h[i] + infinityMatrix[i][j];
             changed = true;
@@ -42,8 +57,8 @@ export class GraphTask7 extends Graph {
     }
 
     // Step 2: Recalculate graph weights to be non-negative
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this.length; j++) {
         if (infinityMatrix[i][j] !== Infinity) {
           infinityMatrix[i][j] += h[i] - h[j];
         }
@@ -52,16 +67,16 @@ export class GraphTask7 extends Graph {
 
     // Step 3: Run Dijkstra's algorithm for each pair of vertices
     const distances: number[][] = [];
-    for (let s = 0; s < n; s++) {
-      const dist = Array(n).fill(Infinity);
+    for (let s = 0; s < this.length; s++) {
+      const dist = Array(this.length).fill(Infinity);
       dist[s] = 0;
 
-      const visited = Array(n).fill(false);
+      const visited = Array(this.length).fill(false);
       visited[s] = true;
 
       let u = s;
-      for (let i = 0; i < n - 1; i++) {
-        for (let v = 0; v < n; v++) {
+      for (let i = 0; i < this.length - 1; i++) {
+        for (let v = 0; v < this.length; v++) {
           if (!visited[v] && infinityMatrix[u][v] < Infinity) {
             const alt = dist[u] + infinityMatrix[u][v];
             if (alt < dist[v]) {
@@ -71,7 +86,7 @@ export class GraphTask7 extends Graph {
         }
 
         let minDist = Infinity;
-        for (let v = 0; v < n; v++) {
+        for (let v = 0; v < this.length; v++) {
           if (!visited[v] && dist[v] < minDist) {
             minDist = dist[v];
             u = v;
@@ -82,13 +97,31 @@ export class GraphTask7 extends Graph {
       }
 
       // Step 4: Adjust distances to original weights
-      for (let i = 0; i < n; i++) {
+      for (let i = 0; i < this.length; i++) {
         if (dist[i] !== Infinity) {
           distances.push([s, i, dist[i] - h[s] + h[i]]);
         }
       }
     }
 
-    console.log(distances.filter((arr) => arr[0] !== arr[1]));
+    return distances.filter((arr) => arr[0] !== arr[1]);
+  }
+
+  printInfo() {
+    printCommonInfo();
+  }
+
+  printOrWriteResult({ result }: PrintResult) {
+    const stream = getStreamOrNull(this.outputFlag, this.filePath);
+
+    writeOrPrintMatrix({
+      matrix: result.map(([v1, v2, weight]) => [shiftVertex(v1), shiftVertex(v2), weight]),
+      before: 'Shortest paths lengths',
+      stream,
+    });
+
+    if (stream) {
+      stream.close();
+    }
   }
 }

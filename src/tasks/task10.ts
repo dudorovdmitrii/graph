@@ -19,14 +19,11 @@ export class GraphTask10 extends Graph {
         s = i;
       }
     }
-    console.log('0');
     if (stop != 2) {
       return;
     }
     let flag = true;
 
-    /////
-    console.log('1');
     while (flag) {
       for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
@@ -39,7 +36,6 @@ export class GraphTask10 extends Graph {
       q.push(s);
       const used: boolean[] = new Array(n).fill(false);
       used[s] = true;
-      console.log('adsdfd');
       while (q.length !== 0) {
         const v = q.shift();
         for (let i = 0; i < n; i++) {
@@ -56,7 +52,7 @@ export class GraphTask10 extends Graph {
       }
       if (used[t]) {
         let curvertex = t;
-        let min = 1000000000;
+        let min = Infinity;
         while (curvertex != s) {
           if (min > result[p[curvertex]][curvertex]) {
             min = result[p[curvertex]][curvertex];
@@ -73,9 +69,7 @@ export class GraphTask10 extends Graph {
         flag = false;
       }
     }
-    ////
 
-    console.log('Поток');
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         if (stream[i][j] > 0) {

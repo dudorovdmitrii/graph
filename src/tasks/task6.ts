@@ -1,17 +1,42 @@
 import { Graph } from '../graph';
+import { getStreamOrNull, printCommonInfo, shiftVertex, writeOrPrintMatrix } from '../helpers';
+import { Edge, Task6Flag } from '../types';
+
+interface PrintResult {
+  result: Edge[];
+}
 
 export class GraphTask6 extends Graph {
-  solveByDijkstra() {
-    const start = 9;
+  solve(flag: Task6Flag, start: number) {
+    let result: Edge[] = [];
 
-    const distances = new Array(this.length).fill(Number.MAX_SAFE_INTEGER); // массив расстояний до каждой вершины
+    switch (flag) {
+      case '-d': {
+        result = this.solveByDijkstra(start);
+        break;
+      }
+      case '-b': {
+        result = this.solveByBellmanaFordMur(start);
+        break;
+      }
+      case '-t': {
+        result = this.solveBylevit(start);
+        break;
+      }
+    }
+
+    this.printOrWriteResult({ result }, start);
+  }
+
+  solveByDijkstra(start: number) {
+    const distances = new Array(this.length).fill(Infinity); // массив расстояний до каждой вершины
     distances[start] = 0; // расстояние до начальной вершины равно 0
 
     const visited = new Array(this.length).fill(false); // массив для отслеживания посещенных вершин
 
     // цикл по всем вершинам графа
     for (let i = 0; i < this.length; i++) {
-      let minDistance = Number.MAX_SAFE_INTEGER;
+      let minDistance = Infinity;
       let currentVertex = -1;
 
       // ищем ближайшую вершину
@@ -20,6 +45,10 @@ export class GraphTask6 extends Graph {
           minDistance = distances[j];
           currentVertex = j;
         }
+      }
+
+      if (currentVertex === -1) {
+        break;
       }
 
       // помечаем выбранную вершину как посещенную
@@ -38,20 +67,18 @@ export class GraphTask6 extends Graph {
     }
 
     // формируем массив пар вершин и расстояний
-    const result: [number, number][] = [];
+    const result: Edge[] = [];
     for (let i = 0; i < this.length; i++) {
       if (i !== start) {
-        result.push([start, i], distances[i]);
+        result.push([start, i, distances[i]]);
       }
     }
 
     return result;
   }
 
-  solveByBellmanaFordMur() {
-    const start = 2;
-
-    const distances = new Array(this.length).fill(Number.MAX_SAFE_INTEGER); // массив расстояний до каждой вершины
+  solveByBellmanaFordMur(start: number) {
+    const distances = new Array(this.length).fill(Infinity); // массив расстояний до каждой вершины
     distances[start] = 0; // расстояние до начальной вершины равно 0
 
     // цикл по всем вершинам графа
@@ -70,11 +97,11 @@ export class GraphTask6 extends Graph {
     }
 
     // проверка наличия отрицательных циклов в графе
-    for (let j = 0; j < this.length; j++) {
-      for (let k = 0; k < this.length; k++) {
-        if (this.matrix[j][k] !== 0) {
-          const distanceToNeighbor = distances[j] + this.matrix[j][k];
-          if (distanceToNeighbor < distances[k]) {
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this.length; j++) {
+        if (this.matrix[i][j] !== 0) {
+          const distanceToNeighbor = distances[i] + this.matrix[i][j];
+          if (distanceToNeighbor < distances[j]) {
             throw new Error('Граф содержит отрицательный цикл');
           }
         }
@@ -82,21 +109,19 @@ export class GraphTask6 extends Graph {
     }
 
     // формируем массив пар вершин и расстояний
-    const result: [number, number][] = [];
+    const result: Edge[] = [];
     for (let i = 0; i < this.length; i++) {
       if (i !== start) {
-        result.push([start, i], distances[i]);
+        result.push([start, i, distances[i]]);
       }
     }
 
     return result;
   }
 
-  solveBylevit() {
-    const start = 9;
-    const INF = Number.MAX_SAFE_INTEGER;
-    const state = new Array(this.length).fill(2); // 0 - в очереди, 1 - на размышление, 2 - не рассмотрена
-    const dist = new Array(this.length).fill(INF);
+  solveBylevit(start: number) {
+    const state = new Array(this.length).fill(2); // 0 - в очереди, 1 - на рассмотрении, 2 - не рассмотрена
+    const dist = new Array(this.length).fill(Infinity);
     const q = [start];
     state[start] = 0;
     dist[start] = 0;
@@ -105,30 +130,59 @@ export class GraphTask6 extends Graph {
       const v = q.shift()!;
       state[v] = 1;
 
-      for (let u = 0; u < this.length; u++) {
-        if (this.matrix[v][u] && state[u] !== 0) {
-          const w = this.matrix[v][u];
-          if (dist[v] + w < dist[u]) {
-            dist[u] = dist[v] + w;
-            if (state[u] === 2) {
-              q.push(u);
-              state[u] = 0;
-            } else if (state[u] === 1) {
-              q.unshift(u);
-              state[u] = 0;
+      for (let i = 0; i < this.length; i++) {
+        // На каждом шаге берем вершину из очереди q переводим ее в рассмотрение
+        // Просматриваем все ребра вне очереди, выходящие из этой вершины
+        if (this.matrix[v][i] !== 0 && state[i] !== 0) {
+          const w = this.matrix[v][i];
+
+          if (dist[v] + w < dist[i]) {
+            dist[i] = dist[v] + w;
+            if (state[i] === 2) {
+              // Не рассмотрена -> в очереди
+              q.push(i);
+              state[i] = 0;
+            } else if (state[i] === 1) {
+              // На рассмотрении -> в очереди
+              q.unshift(i);
+              state[i] = 0;
             }
           }
         }
       }
     }
 
-    const result = [];
+    const result: Edge[] = [];
     for (let i = 0; i < this.length; i++) {
-      if (i !== start && dist[i] !== INF) {
+      if (i !== start) {
         result.push([start, i, dist[i]]);
       }
     }
 
     return result;
+  }
+
+  printInfo() {
+    printCommonInfo();
+    console.log('-d: алгоритм Дейкстры');
+    console.log('-b: алгоритм Беллмана-Форда-Мура');
+    console.log('-t: алгоритм Дейкстры');
+    console.log('Список параметров:');
+    console.log('n=vertex: Начальная вершина');
+    console.log('d=vertex: Конечная вершина');
+  }
+
+  printOrWriteResult({ result }: PrintResult, start: number) {
+    const stream = getStreamOrNull(this.outputFlag, this.filePath);
+
+    writeOrPrintMatrix({
+      matrix: result.map(([v1, v2, weight]) => [shiftVertex(v1), shiftVertex(v2), weight]),
+      before: 'Shortest paths lengths',
+      stream,
+    });
+
+    if (stream) {
+      stream.close();
+    }
   }
 }

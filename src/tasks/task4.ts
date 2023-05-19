@@ -53,11 +53,14 @@ export class GraphTask4 extends Graph {
         results.push({ ...resultKruscal, algorithm: 'k' });
 
         const dateBeforePrim = Date.now();
-        const resultPrim = this.solveByKruscal();
-        this.solveByPrim();
+        const resultPrim = this.solveByPrim();
         results.push({ ...resultPrim, algorithm: 'p' });
         time.push(Date.now() - dateBeforePrim);
 
+        const dateBeforeBoruvka = Date.now();
+        const resultBoruvka = this.solveByBuravka();
+        results.push({ ...resultBoruvka, algorithm: 'p' });
+        time.push(Date.now() - dateBeforeBoruvka);
         break;
       }
     }

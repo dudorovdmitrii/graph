@@ -4,6 +4,8 @@ export type InputFlag = '-e' | '-m' | '-l' | null;
 
 export type Task4Flag = '-s' | '-b' | '-p' | '-k' | undefined;
 
+export type Task6Flag = '-b' | '-d' | '-t' | undefined;
+
 export type NullableWriteStream = WriteStream | null;
 
 export type LaunchData = {

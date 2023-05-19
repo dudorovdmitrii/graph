@@ -11,7 +11,7 @@ import {
   GraphTask7,
   GraphTask9,
 } from './tasks';
-import { Task4Flag } from './types';
+import { Task4Flag, Task6Flag } from './types';
 
 export function main() {
   const data = getLaunchData();
@@ -76,18 +76,32 @@ export function main() {
     }
     case '6': {
       const graph = new GraphTask6(data);
-      const result = graph.solveBylevit();
-      console.log(result);
+      const flags = ['-d', '-b', '-t'];
+      let start: number | undefined = undefined;
+      let flag: Task6Flag;
+      for (const arg of process.argv) {
+        if (arg.startsWith('n=')) {
+          start = parseInt(arg.slice(2));
+        }
+        if (flags.includes(arg)) {
+          flag = arg as Task6Flag;
+        }
+      }
+      if (start !== undefined) {
+        graph.solve(flag, start - 1);
+      } else if (infoFlag) {
+        graph.printInfo();
+      }
       break;
     }
     case '7': {
       const graph = new GraphTask7(data);
-      graph.johnsonDistance();
+      graph.solve();
       break;
     }
     case '9': {
       const graph = new GraphTask9(data);
-      graph.hamiltonianPath();
+      graph.solve();
       break;
     }
     case '10': {
