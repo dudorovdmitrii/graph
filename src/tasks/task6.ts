@@ -29,14 +29,13 @@ export class GraphTask6 extends Graph {
   }
 
   solveByDijkstra(start: number) {
-    // for (int i = 0; i < graph.size; i++) {
-    //   for (int j = 0; j < graph.size; j++) {
-    //     if (graph.matrix[i][j] < 0) {
-    //       print('Граф содержит отрицательное ребро');
-    //       return;
-    //     }
-    //   }
-    // }
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this.length; j++) {
+        if (this.matrix[i][j] < 0) {
+          throw new Error('Граф содержит отрицательное ребро');
+        }
+      }
+    }
     const distances = new Array(this.length).fill(Infinity); // массив расстояний до каждой вершины
     distances[start] = 0; // расстояние до начальной вершины равно 0
 
@@ -134,29 +133,29 @@ export class GraphTask6 extends Graph {
     state[start] = 0;
     dist[start] = 0;
 
-    // while (q.length) {
-    //   int v = q.removeFirst();
-    //   state[v] = 1;
+    while (q.length > 0) {
+      const v = q.shift()!;
+      state[v] = 1;
 
-    //   for (int u = 0; u < n; u++) {
-    //     int w = graph.matrix[v][u];
-    //     if (graph.matrix[v][u] != 0) {
-    //       if (state[u] == 2) {
-    //         dist[u] = dist[v] + w;
-    //         state[u] = 0;
-    //         q.addLast(u);
-    //       }
-    //       if (state[u] == 1 && dist[u] > dist[v] + w) {
-    //         dist[u] = min(dist[u], dist[v] + w);
-    //         state[u] = 0;
-    //         q.addFirst(u);
-    //       }
-    //       if (state[u] == 0 && dist[u] > dist[v] + w) {
-    //         dist[u] = min(dist[u], dist[v] + w);
-    //       }
-    //     }
-    //   }
-    // }
+      for (let u = 0; u < this.length; u++) {
+        const w = this.matrix[v][u];
+        if (this.matrix[v][u] != 0) {
+          if (state[u] == 2) {
+            dist[u] = dist[v] + w;
+            state[u] = 0;
+            q.push(u);
+          }
+          if (state[u] == 1 && dist[u] > dist[v] + w) {
+            dist[u] = Math.min(dist[u], dist[v] + w);
+            state[u] = 0;
+            q.unshift(u);
+          }
+          if (state[u] == 0 && dist[u] > dist[v] + w) {
+            dist[u] = Math.min(dist[u], dist[v] + w);
+          }
+        }
+      }
+    }
 
     const result: Edge[] = [];
     for (let i = 0; i < this.length; i++) {
@@ -172,7 +171,7 @@ export class GraphTask6 extends Graph {
     printCommonInfo();
     console.log('-d: алгоритм Дейкстры');
     console.log('-b: алгоритм Беллмана-Форда-Мура');
-    console.log('-t: алгоритм Дейкстры');
+    console.log('-t: алгоритм Левита');
     console.log('Список параметров:');
     console.log('n=vertex: Начальная вершина');
     console.log('d=vertex: Конечная вершина');

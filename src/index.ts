@@ -111,7 +111,7 @@ export function main() {
     }
     case '11': {
       const graph = new GraphTask11(data);
-      graph.all();
+      graph.solve();
       break;
     }
     default:
