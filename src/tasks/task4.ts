@@ -59,7 +59,7 @@ export class GraphTask4 extends Graph {
 
         const dateBeforeBoruvka = Date.now();
         const resultBoruvka = this.solveByBuravka();
-        results.push({ ...resultBoruvka, algorithm: 'p' });
+        results.push({ ...resultBoruvka, algorithm: 'b' });
         time.push(Date.now() - dateBeforeBoruvka);
         break;
       }

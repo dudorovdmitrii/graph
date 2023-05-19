@@ -29,6 +29,14 @@ export class GraphTask6 extends Graph {
   }
 
   solveByDijkstra(start: number) {
+    // for (int i = 0; i < graph.size; i++) {
+    //   for (int j = 0; j < graph.size; j++) {
+    //     if (graph.matrix[i][j] < 0) {
+    //       print('Граф содержит отрицательное ребро');
+    //       return;
+    //     }
+    //   }
+    // }
     const distances = new Array(this.length).fill(Infinity); // массив расстояний до каждой вершины
     distances[start] = 0; // расстояние до начальной вершины равно 0
 
@@ -126,31 +134,29 @@ export class GraphTask6 extends Graph {
     state[start] = 0;
     dist[start] = 0;
 
-    while (q.length) {
-      const v = q.shift()!;
-      state[v] = 1;
+    // while (q.length) {
+    //   int v = q.removeFirst();
+    //   state[v] = 1;
 
-      for (let i = 0; i < this.length; i++) {
-        // На каждом шаге берем вершину из очереди q переводим ее в рассмотрение
-        // Просматриваем все ребра вне очереди, выходящие из этой вершины
-        if (this.matrix[v][i] !== 0 && state[i] !== 0) {
-          const w = this.matrix[v][i];
-
-          if (dist[v] + w < dist[i]) {
-            dist[i] = dist[v] + w;
-            if (state[i] === 2) {
-              // Не рассмотрена -> в очереди
-              q.push(i);
-              state[i] = 0;
-            } else if (state[i] === 1) {
-              // На рассмотрении -> в очереди
-              q.unshift(i);
-              state[i] = 0;
-            }
-          }
-        }
-      }
-    }
+    //   for (int u = 0; u < n; u++) {
+    //     int w = graph.matrix[v][u];
+    //     if (graph.matrix[v][u] != 0) {
+    //       if (state[u] == 2) {
+    //         dist[u] = dist[v] + w;
+    //         state[u] = 0;
+    //         q.addLast(u);
+    //       }
+    //       if (state[u] == 1 && dist[u] > dist[v] + w) {
+    //         dist[u] = min(dist[u], dist[v] + w);
+    //         state[u] = 0;
+    //         q.addFirst(u);
+    //       }
+    //       if (state[u] == 0 && dist[u] > dist[v] + w) {
+    //         dist[u] = min(dist[u], dist[v] + w);
+    //       }
+    //     }
+    //   }
+    // }
 
     const result: Edge[] = [];
     for (let i = 0; i < this.length; i++) {
