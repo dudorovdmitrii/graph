@@ -48,9 +48,11 @@ export class GraphTask11 extends Graph {
     }
     let flag = true;
 
+    // Пока есть путь в конечную вершину
     while (flag) {
       for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
+          // Вычисляем новый поток на основе предыдущего
           result[i][j] = this.matrix[i][j] - stream[i][j];
         }
       }
@@ -77,6 +79,7 @@ export class GraphTask11 extends Graph {
       if (used[t]) {
         let curvertex = t;
         let min = Infinity;
+        // Находим минимальный вес ребра в пути
         while (curvertex != s) {
           if (min > result[p[curvertex]][curvertex]) {
             min = result[p[curvertex]][curvertex];
@@ -84,6 +87,8 @@ export class GraphTask11 extends Graph {
           curvertex = p[curvertex];
         }
         curvertex = t;
+        // Обновляем веса прямых и обратных ребер
+        // после проталкивания потока
         while (curvertex != s) {
           stream[p[curvertex]][curvertex] += min;
           stream[curvertex][p[curvertex]] -= min;
