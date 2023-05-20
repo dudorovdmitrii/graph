@@ -1,12 +1,38 @@
 import { Graph } from '../graph';
+import {
+  getStreamOrNull,
+  printCommonInfo,
+  shiftVertex,
+  writeOrPrintMatrix,
+  writeOrPrintValue,
+} from '../helpers';
+
+interface PrintResult {
+  result: number[][];
+  sum: number;
+  start: number;
+  end: number;
+}
 
 export class GraphTask10 extends Graph {
-  fordFalkernson(): void {
+  solve() {
+    if (this.infoFlag) {
+      this.printInfo();
+      return;
+    }
+
+    const result = this.fordFalkernson();
+    if (result) {
+      this.printOrWriteResult(result);
+    }
+  }
+  fordFalkernson() {
+    const answer: number[][] = [];
     const n = this.length;
     let s = 0;
     let t = 0;
     const stream = Array.from({ length: n }, () => new Array(n).fill(0));
-    const result = Array.from({ length: n }, () => new Array(n).fill(0));
+    const result: number[][] = Array.from({ length: n }, () => new Array(n).fill(0));
     let stop = 0;
 
     for (let i = 0; i < n; i++) {
@@ -73,7 +99,7 @@ export class GraphTask10 extends Graph {
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         if (stream[i][j] > 0) {
-          console.log(`[${i},${j}]=${stream[i][j]}`);
+          answer.push([i, j, stream[i][j]]);
         }
       }
     }
@@ -81,6 +107,30 @@ export class GraphTask10 extends Graph {
     for (let i = 0; i < n; i++) {
       sum += stream[s][i];
     }
-    console.log(`Величина потока: ${sum}`);
+
+    return { result: answer, sum, start: s, end: t };
+  }
+
+  printInfo() {
+    printCommonInfo();
+  }
+
+  printOrWriteResult({ result, sum, start, end }: PrintResult) {
+    const stream = getStreamOrNull(this.outputFlag, this.filePath);
+
+    writeOrPrintValue({
+      stream,
+      value: sum,
+      before: `maximum flow from ${shiftVertex(start)} to ${shiftVertex(end)}`,
+    });
+
+    writeOrPrintMatrix({
+      stream,
+      matrix: result.map(([start, end, weight]) => [shiftVertex(start), shiftVertex(end), weight]),
+    });
+
+    if (stream) {
+      stream.close();
+    }
   }
 }

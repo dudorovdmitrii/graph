@@ -106,7 +106,7 @@ export function main() {
     }
     case '10': {
       const graph = new GraphTask10(data);
-      graph.fordFalkernson();
+      graph.solve();
       break;
     }
     case '11': {

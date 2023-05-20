@@ -1,8 +1,7 @@
-import { GraphTask10 } from '.';
 import { Graph } from '../graph';
 import { getStreamOrNull, printCommonInfo, writeOrPrintMatrix } from '../helpers';
 
-enum ColorType {
+enum Color {
   red = 'RED',
   blue = 'BLUE',
   any = 'ANY',
@@ -104,14 +103,14 @@ export class GraphTask11 extends Graph {
 
   solveByUnknown() {
     const result: number[][] = [];
-    const color: ColorType[] = new Array(this.length).fill(ColorType.any);
+    const color: Color[] = new Array(this.length).fill(Color.any);
     const q: number[] = [];
     const used: boolean[] = new Array(this.length).fill(false);
 
     // Раскрашиваем первую вершину и добавляем ее в очередь
     q.push(0);
     used[0] = true;
-    color[0] = ColorType.red;
+    color[0] = Color.red;
 
     // Проверяем граф на двудольность
     while (q.length > 0) {
@@ -120,9 +119,9 @@ export class GraphTask11 extends Graph {
         // Проходим по смежным вершинам
         if (this.matrix[v][i] != 0) {
           // Раскрашиваем найденную нераскрашенную вершину в противоположный цвет текущей
-          if (color[i] === ColorType.any) {
+          if (color[i] === Color.any) {
             q.push(i);
-            color[i] = color[v] === ColorType.red ? ColorType.blue : ColorType.red;
+            color[i] = color[v] === Color.red ? Color.blue : Color.red;
           }
           if (color[i] == color[v]) {
             throw new Error('Граф не двудольный');
@@ -138,21 +137,20 @@ export class GraphTask11 extends Graph {
     // Добавляем отрицательные обратные ребра, для того чтобы обнулить добавляемые
     for (let i = 0; i < this.length; i++) {
       for (let j = 0; j < this.length; j++) {
-        if (color[i] == ColorType.red && color[j] == ColorType.blue && this.matrix[i][j] == 1) {
+        if (color[i] == Color.red && color[j] == Color.blue && this.matrix[i][j] == 1) {
           matrix[i][j] = this.matrix[i][j];
-          matrix[j][i] = -this.matrix[j][i];
         }
       }
     }
 
     // Добавляем 2 дополнительные вершины, 1 - исток, 2 - сток
     for (let i = 0; i < this.length; i++) {
-      if (color[i] == ColorType.red) {
+      if (color[i] == Color.red) {
         matrix[this.length][i] = 1;
       }
     }
     for (let i = 0; i < this.length; i++) {
-      if (color[i] == ColorType.blue) {
+      if (color[i] == Color.blue) {
         matrix[i][this.length + 1] = 1;
       }
     }
