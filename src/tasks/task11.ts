@@ -102,7 +102,7 @@ export class GraphTask11 extends Graph {
     return stream;
   }
 
-  solveByKun() {
+  solveByUnknown() {
     const result: number[][] = [];
     const color: ColorType[] = new Array(this.length).fill(ColorType.any);
     const q: number[] = [];
@@ -135,6 +135,7 @@ export class GraphTask11 extends Graph {
       new Array(this.length + 2).fill(0),
     );
 
+    // Добавляем отрицательные обратные ребра, для того чтобы обнулить добавляемые
     for (let i = 0; i < this.length; i++) {
       for (let j = 0; j < this.length; j++) {
         if (color[i] == ColorType.red && color[j] == ColorType.blue && this.matrix[i][j] == 1) {
@@ -143,6 +144,8 @@ export class GraphTask11 extends Graph {
         }
       }
     }
+
+    // Добавляем 2 дополнительные вершины, 1 - исток, 2 - сток
     for (let i = 0; i < this.length; i++) {
       if (color[i] == ColorType.red) {
         matrix[this.length][i] = 1;
@@ -184,7 +187,7 @@ export class GraphTask11 extends Graph {
       this.matrix = this.getСorrelatedGraph();
     }
 
-    const result = this.solveByKun();
+    const result = this.solveByUnknown();
     this.printOrWriteResult({ result });
   }
 
